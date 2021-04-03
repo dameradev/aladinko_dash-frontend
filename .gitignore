@@ -13,3 +13,4 @@ prisma/.env
 src/generated
 
 .env
+.next

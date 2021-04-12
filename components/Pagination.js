@@ -20,6 +20,7 @@ export default function Pagination({ page }) {
   if (error) return <DisplayError error={error} />;
   const { count } = data._allCarpetsMeta;
   const pageCount = Math.ceil(count / perPage);
+  console.log(page);
   return (
     <PaginationStyles>
       <Head>

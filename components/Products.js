@@ -3,6 +3,8 @@ import gql from 'graphql-tag';
 import styled from 'styled-components';
 import { perPage } from '../config';
 
+import Pagination from './Pagination';
+
 export const ALL_PRODUCTS_QUERY = gql`
   query ALL_PRODUCTS_QUERY($skip: Int = 0, $first: Int) {
     allCarpets(first: $first, skip: $skip) {
@@ -62,13 +64,14 @@ export default function Products({ page }) {
     window.open(`${'//' + 'google.com/search?q='}${address}`, '_blank');
   };
 
-  console.log(data);
+  console.log(page);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
   return (
     <div>
       <ProductsListStyles>
+        {/* <Pagination page={page} /> */}
         {data?.allCarpets.map((carpet) => (
           <div key={carpet.id} className="single-carpet">
             <p>

@@ -1,19 +1,33 @@
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery, useLazyQuery } from '@apollo/client';
 import gql from 'graphql-tag';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { perPage } from '../config';
 
 import Pagination from './Pagination';
 
 export const ALL_PRODUCTS_QUERY = gql`
-  query ALL_PRODUCTS_QUERY($skip: Int = 0, $first: Int) {
-    allCarpets(first: $first, skip: $skip) {
+  query ALL_PRODUCTS_QUERY(
+    $skip: Int = 0
+    $first: Int
+    $status: CarpetStatusType
+  ) {
+    allCarpets(first: $first, skip: $skip, where: { status: $status }) {
       id
       name
       address
       phoneNumber
       message
       city
+    }
+  }
+`;
+
+const UPDATE_CARPET_STATUS = gql`
+  mutation UPDATE_CARPET_STATUS($id: ID!, $status: CarpetStatusType) {
+    updateCarpet(id: $id, data: { status: $status }) {
+      status
+      id
     }
   }
 `;
@@ -53,12 +67,30 @@ const ProductsListStyles = styled.div`
 `;
 
 export default function Products({ page }) {
-  const { data, error, loading } = useQuery(ALL_PRODUCTS_QUERY, {
-    variables: {
-      skip: page * perPage - perPage,
-      first: perPage,
-    },
-  });
+  const [status, setStatus] = useState('Ordered');
+
+  const [getCarpets, { data, error, loading }] = useLazyQuery(
+    ALL_PRODUCTS_QUERY,
+    {
+      variables: {
+        skip: page * perPage - perPage,
+        first: perPage,
+        status,
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!data?.allCarpets) {
+      getCarpets();
+    }
+  }, [data?.allCarpets]);
+
+  useEffect(() => {
+    getCarpets();
+  }, [status]);
+
+  const [updateCarpet] = useMutation(UPDATE_CARPET_STATUS);
 
   const onAddressClick = (address) => {
     window.open(`${'//' + 'google.com/search?q='}${address}`, '_blank');
@@ -72,6 +104,11 @@ export default function Products({ page }) {
     <div>
       <ProductsListStyles>
         {/* <Pagination page={page} /> */}
+        <div>
+          <button onClick={() => setStatus('Ordered')}>Poracani</button>
+          <button onClick={() => setStatus('Processing')}>Prevzemani</button>
+          <button onClick={() => setStatus('Delivered')}>Zavrseni</button>
+        </div>
         {data?.allCarpets.map((carpet) => (
           <div key={carpet.id} className="single-carpet">
             <p>
@@ -102,6 +139,26 @@ export default function Products({ page }) {
               <span>Poraka: </span>
               <span>{carpet.message}</span>
             </p>
+            <button
+              type="button"
+              onClick={() =>
+                updateCarpet({
+                  variables: { id: carpet.id, status: 'Processing' },
+                })
+              }
+            >
+              Prevzemano
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                updateCarpet({
+                  variables: { id: carpet.id, status: 'Delivered' },
+                })
+              }
+            >
+              Zavrseno
+            </button>
           </div>
         ))}
       </ProductsListStyles>

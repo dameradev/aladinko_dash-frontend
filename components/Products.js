@@ -17,6 +17,7 @@ export const ALL_PRODUCTS_QUERY = gql`
       name
       address
       phoneNumber
+      orderDate
       message
       city
     }
@@ -138,6 +139,10 @@ export default function Products({ page }) {
             <p>
               <span>Poraka: </span>
               <span>{carpet.message}</span>
+            </p>
+            <p>
+              <span>Data prevzema: </span>
+              <span>{Intl.DateTimeFormat("en-GB", { year: 'numeric', month: 'long', day: 'numeric', hour:"numeric", minute: "numeric" }).format(new Date(carpet.orderDate))}</span>
             </p>
             <button
               type="button"
